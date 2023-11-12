@@ -1,0 +1,61 @@
+// ==UserScript==
+// @name         Descifrar mensajes en divs
+// @namespace    https://ejemplo.com
+// @version      1.0
+// @description  Descifrar mensajes en divs con 3DES ECB y mostrar en consola
+// @match        https://cripto.tiiny.site/*
+// @grant        unsafeWindow
+// @require      https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js#sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA==
+// ==/UserScript==
+
+(function() {
+
+    function addDivToDOM(id, className) {
+        const newDiv = document.createElement("div");
+        newDiv.id = id;
+        if (className) {
+            newDiv.classList.add(className);
+        }
+        document.body.appendChild(newDiv);
+    }
+
+    addDivToDOM("/s5st3UlE60=", "M7");
+    addDivToDOM("q5X7S2lAAKE=", "M8");
+    addDivToDOM("NaffO7j8Bss=", "M9");
+    addDivToDOM("S/Kg1vwTjc0=", "M10");
+
+    function decryptCiphertext(ciphertext, key) {
+        const decrypted = CryptoJS.TripleDES.decrypt({
+            ciphertext: CryptoJS.enc.Base64.parse(ciphertext)
+        }, key, {
+            mode: CryptoJS.mode.ECB,
+            padding: CryptoJS.pad.Pkcs7
+        });
+        return decrypted.toString(CryptoJS.enc.Utf8);
+    }
+
+    const pageText = document.body.innerText;//todo el texto pag
+    const uppercaseLetters = pageText.match(/[A-Z]/g).join('');//encuentra y concatena solo letras mayusculas
+
+    const encryptionKey = CryptoJS.enc.Utf8.parse(uppercaseLetters);
+    console.log("La llave es: ", uppercaseLetters);
+
+    const divElements = document.querySelectorAll('div'); //Obtiene todos lod divs de la pagina
+
+    console.log("Número de mensajes cifrados encontrados: ", divElements.length);
+
+    if (divElements.length > 0) {
+        console.log("Mensajes descifrados:");
+
+        divElements.forEach((div, index) => {
+            const encryptedMessage = div.id;
+            const decryptedMessage = decryptCiphertext(encryptedMessage, encryptionKey);
+            console.log(encryptedMessage, decryptedMessage);
+            const spanElement = document.createElement('span');
+            spanElement.textContent = decryptedMessage;
+            div.appendChild(spanElement);
+        });
+    } else {
+        console.log("No se encontraron divs en la página.");
+    }
+})();
